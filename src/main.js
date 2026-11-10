@@ -35,7 +35,7 @@ $('file').addEventListener('change', event => {
   objectURL = URL.createObjectURL(file); audio.src = objectURL;
   $('track-name').textContent = file.name;
   $('play').disabled = true;
-  status('Loading local audio…'); updateProgress();
+  status('Loading local audio…'); updateProgress(); updateTransport();
   event.target.value = '';
 });
 audio.addEventListener('loadedmetadata', () => {
@@ -46,7 +46,11 @@ audio.addEventListener('error', () => {
   status('This file could not be played. Open another audio file.');
 });
 $('play').addEventListener('click', async () => {
-  if (!audio.paused) { audio.pause(); return; }
+  if (!audio.paused) {
+    audio.pause(); updateTransport();
+    status('Paused. Press Play to continue.');
+    return;
+  }
   const generation = trackGeneration;
   $('play').disabled = true;
   try {
@@ -72,9 +76,7 @@ $('play').addEventListener('click', async () => {
   }
 });
 for (const name of ['play', 'pause', 'ended']) audio.addEventListener(name, updateTransport);
-audio.addEventListener('pause', () => {
-  if (audio.getAttribute('src') && !audio.error) status(audio.ended ? 'Track finished. Press Play to listen again.' : 'Paused. Press Play to continue.');
-});
+// Status follows explicit user intent; queued media events can belong to an old source.
 audio.addEventListener('ended', () => status('Track finished. Press Play to listen again.'));
 audio.addEventListener('timeupdate', updateProgress);
 audio.addEventListener('durationchange', updateProgress);
@@ -95,7 +97,17 @@ function rendererError(message) {
 try { renderer = selected.create(canvas); }
 catch (error) { rendererError(error.message); }
 canvas.addEventListener('webglcontextlost', event => {
-  event.preventDefault(); rendererError('Graphics context lost. Reload to restore the visualizer.');
+  event.preventDefault(); rendererError('Graphics context lost. Waiting for the browser to restore it…');
+});
+canvas.addEventListener('webglcontextrestored', () => {
+  try {
+    renderer?.dispose();
+    renderer = selected.create(canvas);
+    failed = false; previousTime = undefined;
+    $('renderer').textContent = 'WEBGL / PARTICLE STUDY';
+    $('hint').textContent = 'Open a track to bring the field to life.';
+    frame = requestAnimationFrame(render);
+  } catch (error) { rendererError(error.message); }
 });
 function render(now) {
   if (failed) return;

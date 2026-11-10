@@ -3,32 +3,46 @@
 Challenge: https://hackathon.qodo.ai/challenges/?day=01
 Discussion: https://github.com/orgs/qodo-hackathon/discussions/2
 Repository: https://github.com/vracton/particle-viz
+PR: https://github.com/vracton/particle-viz/pull/1
+Qodo review: https://github.com/vracton/particle-viz/pull/1#issuecomment-6771503839
 
-## Introduction (ready to post)
+## Submission materials
 
-I'm building **Particle Viz**, a WebGL music visualizer host for listeners and people experimenting with agent-generated graphics. A shared player will manage local music, playback, accent colors, and eventually scrobbling, while small JavaScript visualizers carry their own name and model credit. My goal is to prompt an agent for a new visualizer and slot the reviewed module into the same player.
+Paste `discussion-post.md` into the Day 1 Discussion (or use its delivery section to update an existing introduction). Attach `day-01-desktop.jpg`; `day-01-mobile.jpg` is optional. The Discussion has not been posted on your behalf.
 
-Today's small capability: open one local audio file and play it through one audio-reactive WebGL particle visualizer, with play/pause, seeking, a shared accent color, and visible model attribution.
+## Delivered capability
 
-## Delivery update (finish after Qodo review)
+Open a local audio file and play it through Orbit Field, an audio-reactive WebGL particle visualizer. Play/pause, seek, shared accent color, and module/model metadata work. Audio stays on-device. One trusted bundled module keeps the first increment small.
 
-- PR: pending
-- Screenshot: `day-01-desktop.jpg` (attach this image to the Discussion)
-- Capability: local audio drives Orbit Field; shared playback, seek, and accent controls work.
-- Qodo review: pending — do not claim this challenge complete until the actual review and reflection are recorded below.
-- Review lesson: pending actual Qodo feedback.
-
-## Checks performed
+## Verification
 
 - `npm test`: 3 passing tests for missing/invalid duration, bounded seeking, time/color conversion.
-- `npm run build`: production build passed.
+- `npm run build`: production build passed after the fixes.
+- `npm audit`: zero reported vulnerabilities at verification time.
 - Browser: loaded a generated 12-second WAV; Play entered AUDIO REACTIVE; seek to 50% moved to 0:06; Pause preserved the position.
-- Independent agent review identified an asynchronous Play/file-replacement race. Added a track generation guard so stale playback handlers cannot update a replacement track's UI.
+- Browser: invalid file produced a readable error; replacing it with a WAV restored playback.
+- Browser: accent change worked and the layout was inspected at 390×844.
+- Independent agent review identified an asynchronous Play/file-replacement race. Track generation guards prevent stale async handlers from updating replacement-track UI.
+- Qodo fix regression: replaced a playing track and recorded status transitions: `Loading local audio…` → `Ready. Your audio stays on this device.` The new track was paused, Play was labeled correctly, and the mode was IDLE FIELD.
+- Qodo fix regression: forced loss and restoration with `WEBGL_lose_context`; the unavailable message appeared, then the normal status and rendered particles returned without reload.
 
-## Scope
+## Actual Qodo review and decisions
 
-This delivery has one trusted bundled module, not arbitrary JavaScript execution or agent generation. Scrobbling services, multiple visualizers, persistent settings, richer module contracts, and generation workflows are future increments.
+Qodo reviewed commit `90623f25c223338412a8565ada9079851cc5e74e` and reported two medium findings. Both were evaluated against the implementation and addressed in the follow-up commit on the same PR. These local verification results do not imply Qodo has re-reviewed that follow-up.
 
-## Actual Qodo review and reflection
+1. **Queued pause status on track replacement — accepted.** The old pause handler read the current src instead of identifying the event's original track. Pause status now follows the explicit user Pause action; replacing a track immediately synchronizes the transport. This avoids depending on queued media events, which can also be canceled by `audio.load()`.
+2. **WebGL recovery required reload — accepted as a reliability improvement.** Day 1 originally offered a reload fallback. Since the handler requested restoration, rebuilding the renderer is the more consistent behavior. A restoration handler now recreates GPU resources, clears the failure state, resets frame timing, and restarts rendering; initialization failure keeps a readable fallback.
 
-Pending. Record the review URL, actionable feedback (or explicitly no findings), what was checked against the code, and the decision to accept or question each material recommendation. A review is evidence, not a guarantee of correctness.
+Lesson: guarding awaited Play operations is only one part of lifecycle correctness. Queued browser events can refer to earlier state, and a recovered WebGL context needs fresh GPU resources. The review improved two edge cases while preserving the small first delivery.
+
+## Saved for future increments
+
+Multiple visualizers, a richer/versioned module API, agent prompt-to-module generation and validation, persistence, playlists, scrobbling integrations, and browser-test automation. No general plugin framework or arbitrary JavaScript execution today.
+
+## Short demo script
+
+1. Run `npm ci` and `npm run dev`; open the printed local URL.
+2. Open a local MP3/WAV supported by your browser.
+3. Press Play and show particles responding to low-frequency energy.
+4. Change ACCENT, seek to the middle, then pause.
+5. Show Orbit Field's visible model credit and the Qodo review/fix reflection on the PR.
