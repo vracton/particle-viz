@@ -4,7 +4,7 @@ https://github.com/vracton/particle-viz/blob/main/AGENTS.md
 
 It describes the project, repository layout, working conventions, setup/check commands, and five broad rules: host/module separation, explicit shared contracts, lifecycle ownership, local-first privacy, and focused changes backed by evidence.
 
-My nominee is **“The visualizer gets an API, not the whole repository.”**
+My nominee is the visualizer-agent access boundary under **“One host, many visualizers,”** nicknamed **“The visualizer gets an API, not the whole repository.”**
 
 > A visualizer-building agent has a narrower role than a host/integration agent. Its task must name the visualizer files it is allowed to create or edit.
 
@@ -14,4 +14,8 @@ The reason is the product itself: I want to prompt different agents to make grap
 
 Day 1's Qodo review also showed why lifecycle ownership matters: queued audio events and restored GPU contexts need more than a working happy path. Those examples live in the delivery notes; the root instructions express the broader principles we can apply to future features.
 
-Review Standards import/activation: pending verification.
+I imported AGENTS.md through Qodo Review Standards and verified **11 active, repository-scoped code-review rules** for `vracton/particle-viz`, with no pending rules. Qodo split the broad guidance into reviewable standards for host ownership, shared contracts/colors, resource lifecycles, local data, and reduced motion. The agent-access restriction remains a coding-agent instruction rather than a Qodo code-review check or enforced filesystem sandbox.
+
+PR: https://github.com/vracton/particle-viz/pull/2
+
+![Qodo Review Standards — 11 active rules](https://raw.githubusercontent.com/vracton/particle-viz/main/docs/submission/day-02-qodo-standards.jpg)
