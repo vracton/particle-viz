@@ -146,3 +146,9 @@ input[type=range]:disabled { opacity: .4; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+@media (max-height: 420px) {
+  #app { display: flex; flex-direction: column; justify-content: space-between; }
+  header { position: relative; inset: auto; padding: 18px 20px 0; }
+  .player { position: relative; left: auto; bottom: auto; transform: none; margin: 24px auto 12px; }
+  .graphics-status { position: relative; top: auto; left: auto; transform: none; margin: 16px auto 0; }
+}

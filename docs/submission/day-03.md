@@ -11,7 +11,7 @@ Used the connected GitHub MCP tools to create issues #3, #4, and #5, list the op
 
 Ticket: https://github.com/vracton/particle-viz/issues/3
 Branch: `codex/issue-3-glass-player`
-PR: pending creation
+PR: https://github.com/vracton/particle-viz/pull/6
 
 Delivered a full-viewport canvas, two small metadata controls, and a translucent playback dock. Removed headline, slogans, badges, renderer tags, duplicate labels, and routine visible status prose. File errors and graphics failures remain visible; ordinary transport state is announced through a live region.
 
@@ -23,7 +23,8 @@ Acceptance checks:
 - Enter starts playback and Space pauses through the focused button.
 - Forced WebGL context loss shows a readable message; restoration clears it and rendering resumes.
 - `npm test`: 3 passing. `npm run build`: passed.
-- Qodo review: pending.
+- Qodo review: https://github.com/vracton/particle-viz/pull/6#issuecomment-6777546859. One confirmed medium issue: at 320×180 CSS pixels the fixed dock covered the selector. Reproduced the overlap, then added a short-height flow/scroll layout and rechecked selector and playback access. The original 390px portrait check did not cover this case. Qodo also read linked GitHub issue #3 and the 11 active standards as review context.
+- Feedback carried forward: check both narrow width and short height for overlaid controls; preserve concise visible errors when simplifying text. This is a check in the UI acceptance workflow, not a new framework or skill.
 
 The current dots are intentionally unchanged in this ticket. The shader replacement belongs to issue #5.
 
