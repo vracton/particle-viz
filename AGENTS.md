@@ -30,7 +30,7 @@ Use Node.js 22.12+ (or 20.19+):
 - `npm run build` — create the production build.
 - `npm run preview` — serve that production build locally.
 
-For runtime changes, run the tests and build. Also verify changed audio/graphics interactions in a real WebGL/Web Audio browser with a local audio file. Choose checks based on the change; documentation-only work needs a content/diff check, not an application test suite. Report what was checked and any limits. Keep setup instructions and submission evidence consistent with actual behavior.
+For runtime changes, run the tests and build. Also verify changed audio/graphics interactions in a real WebGL/Web Audio browser with a local audio file. For overlaid controls, check both narrow widths and short viewport heights, including a high-zoom equivalent, so controls remain reachable or the page can scroll. Choose checks based on the change; documentation-only work needs a content/diff check, not an application test suite. Report what was checked and any limits. Keep setup instructions and submission evidence consistent with actual behavior.
 
 ## Project rules
 
@@ -77,3 +77,11 @@ This is an agent instruction policy, not an enforced filesystem sandbox. When a 
 **Rule:** Keep changes focused on the current task. Reuse existing patterns before adding frameworks or abstractions, verify the behavior being changed, and report results accurately. Do not claim unbuilt features, unrun checks, or an AI review as proof of correctness. Preserve unrelated work and record material decisions where the next contributor can find them.
 
 **Why:** This project grows across multiple hackathon challenges. Small, reviewable increments and honest evidence let each challenge improve the factory without consuming the whole roadmap at once.
+
+### 6. Keep interface text concise
+
+**Applies to:** visible interface copy, labels, badges, empty/loading/error states, and user-facing or submission prose.
+
+**Rule:** Show text when it helps the listener operate the app or make a meaningful choice. Omit unsolicited headlines, slogans, technical explanations, decorative tags, and descriptions that repeat a label or an obvious control. Keep necessary control labels, accessible names, short operational feedback, visible errors, and the selected visualizer's name/model credit. Put implementation explanations in developer documentation. Do not use em dashes or stock closing statements in newly authored user-facing and submission prose.
+
+**Why:** The music and graphics are the main experience. Extra text crowds the controls and distracts from the visualizer; removing it must not make the player harder to use or hide a failure.

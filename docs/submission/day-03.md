@@ -31,7 +31,14 @@ The current dots are intentionally unchanged in this ticket. The shader replacem
 ## Issue #4: concise interface instructions
 
 Ticket: https://github.com/vracton/particle-viz/issues/4
-Status: not started; awaiting issue #3 review.
+Branch: `codex/issue-4-concise-copy`
+PR: pending creation
+
+Added a broad interface-writing rule to AGENTS.md: visible words must help operation or a meaningful choice. It excludes decorative/duplicated copy while preserving labels, accessible names, short state feedback, visible errors, and model attribution. Implementation detail belongs in developer docs. New user-facing/submission prose avoids em dashes and stock conclusions.
+
+Compared the rule against issue #3's removals and preserved controls/error states. Added narrow-width plus short-height/zoom-equivalent checks to the general verification workflow, carrying forward Qodo's confirmed overlap finding before this ticket.
+
+Content/diff checks passed. No runtime change or new application tests. Qodo review and rule-source sync verification are pending.
 
 ## Issue #5: GPT-6.1 Sol shader
 
