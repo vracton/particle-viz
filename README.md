@@ -2,9 +2,9 @@
 
 A WebGL music visualizer host where the player owns audio and shared controls, while small JavaScript modules supply the visuals and identify the model that made them.
 
-## Day 1: one working capability
+## Current capability
 
-Open a local audio file and play it through **Orbit Field**, an audio-reactive WebGL particle study. Pause, seek, and change the shared accent color. The module's name and model credit are visible in the player. Files stay in the browser; there is no upload endpoint, account, or backend.
+Open a local audio file and play it through **Sonic Bloom**, an organic fragment-shader field created by GPT-6.1 Sol. Pause, seek, and change the shared accent color. The module's name and model credit are visible in the player. Files stay in the browser; there is no upload endpoint, account, or backend.
 
 ```sh
 npm ci
@@ -21,7 +21,7 @@ npm run preview
 
 ## Tiny visualizer contract
 
-`src/visualizers/orbit-field.js` exports a trusted, bundled module:
+`src/visualizers/sonic-bloom.js` exports a trusted, bundled module:
 
 ```js
 {
@@ -35,9 +35,9 @@ npm run preview
 }
 ```
 
-`time` is seconds, `energy` is a normalized low-frequency average, `accent` is an RGB array in 0–1, and `dpr` is capped at 2. The host sets the canvas backing size before rendering. Modules own and release their GPU resources; the host owns audio, FFT, and the animation loop. Model metadata is an author-supplied credit, not verified provenance.
+`time` is seconds, `energy` is a normalized low-frequency average, `accent` is an RGB array in 0–1, and `dpr` is capped at 2 and scaled down when needed to keep rendering near 1.2 million pixels. The host sets the canvas backing size before rendering. Modules own and release their GPU resources; the host owns audio, FFT, and the animation loop. Model metadata is an author-supplied credit, not verified provenance.
 
-Day 1 has a single registered visualizer. Adding more modules and switching between them is future work. Only reviewed repository code runs: this is not a sandbox for arbitrary generated JavaScript.
+The app has a single registered visualizer. Adding more modules and switching between them is future work. Only reviewed repository code runs: this is not a sandbox for arbitrary generated JavaScript.
 
 ## Deliberately saved for later
 
@@ -49,4 +49,4 @@ Day 1 has a single registered visualizer. Adding more modules and switching betw
 
 ## Verification
 
-`npm test` checks unknown duration handling, seek boundaries, and shared conversions. Browser checks and challenge evidence are recorded in [Day 1 delivery](docs/submission/day-01.md).
+`npm test` checks unknown duration handling, seek boundaries, and shared conversions. Browser checks and challenge evidence are recorded in [Day 1 delivery](docs/submission/day-01.md) and [Day 3 run](docs/submission/day-03.md).

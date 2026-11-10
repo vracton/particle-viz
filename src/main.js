@@ -1,13 +1,20 @@
 import './style.css';
-import { orbitField } from './visualizers/orbit-field.js';
+import { sonicBloom } from './visualizers/sonic-bloom.js';
 import { formatTime, seekTime, colorRGB } from './audio-utils.js';
 
 const $ = id => document.getElementById(id);
 const audio = $('audio'), canvas = $('canvas');
-// Day 1 uses one trusted module. The host owns audio; modules only render.
-const visualizers = [orbitField];
+// The host owns playback and scheduling; trusted modules only render.
+const visualizers = [sonicBloom];
 const selected = visualizers[0];
+$('visualizer').replaceChildren(...visualizers.map(visualizer => {
+  const option = document.createElement('option');
+  option.value = visualizer.id; option.textContent = visualizer.name;
+  return option;
+}));
+$('visualizer').value = selected.id;
 $('model').textContent = selected.authorModel;
+canvas.setAttribute('aria-label', `${selected.name} music visualizer`);
 let renderer, context, analyser, source, bins, objectURL, frame, failed = false;
 let accent = colorRGB($('accent').value);
 let visualTime = 0, previousTime, trackGeneration = 0;
@@ -99,7 +106,10 @@ function rendererError(message) {
 try { renderer = selected.create(canvas); }
 catch (error) { rendererError(error.message); }
 canvas.addEventListener('webglcontextlost', event => {
-  event.preventDefault(); rendererError('Graphics context lost. Waiting for the browser to restore it…');
+  event.preventDefault();
+  // Drop old handles while the context is lost, not after a new one is restored.
+  renderer?.dispose(); renderer = undefined;
+  rendererError('Graphics context lost. Waiting for the browser to restore it…');
 });
 canvas.addEventListener('webglcontextrestored', () => {
   try {
@@ -113,7 +123,9 @@ canvas.addEventListener('webglcontextrestored', () => {
 });
 function render(now) {
   if (failed) return;
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  // Keep fragment-shader workload bounded on high-DPI and large displays.
+  const pixelBudgetRatio = Math.sqrt(1_200_000 / Math.max(1, canvas.clientWidth * canvas.clientHeight));
+  const dpr = Math.min(devicePixelRatio || 1, 2, pixelBudgetRatio);
   const width = Math.max(1, Math.round(canvas.clientWidth*dpr));
   const height = Math.max(1, Math.round(canvas.clientHeight*dpr));
   if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }

@@ -6,7 +6,7 @@ Particle Viz is a browser-based home for music visualizers. A shared player hand
 
 Today this is a Vite/vanilla JavaScript app with one bundled WebGL visualizer. There is no backend or arbitrary-script sandbox. Multiple visualizers, generation workflows, scrobbling integrations, and design changes should be introduced as focused increments when requested, rather than built speculatively.
 
-The current selector is hardcoded for Orbit Field; generic module discovery, selection, and name binding are not implemented yet. The rules below guide future changes as well as the existing prototype.
+The current registry contains one bundled visualizer, and the host binds its name and model credit from metadata. Multi-visualizer switching and automatic discovery are not implemented yet. The rules below guide future changes as well as the existing prototype.
 
 ## Repository map
 
