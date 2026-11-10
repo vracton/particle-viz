@@ -1,6 +1,6 @@
 For Day 2, I added Particle Viz's root **AGENTS.md**:
 
-https://github.com/vracton/particle-viz/blob/codex/day-02-project-rules/AGENTS.md
+https://github.com/vracton/particle-viz/blob/main/AGENTS.md
 
 It describes the project, repository layout, working conventions, setup/check commands, and five broad rules: host/module separation, explicit shared contracts, lifecycle ownership, local-first privacy, and focused changes backed by evidence.
 

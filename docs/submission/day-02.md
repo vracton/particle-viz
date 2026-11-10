@@ -2,7 +2,7 @@
 
 Challenge: https://hackathon.qodo.ai/challenges/?day=02
 Discussion entry point: https://qodo.ai/hackathon-day-2
-Repository instructions: https://github.com/vracton/particle-viz/blob/codex/day-02-project-rules/AGENTS.md
+Repository instructions: https://github.com/vracton/particle-viz/blob/main/AGENTS.md
 
 ## Deliverable
 
@@ -27,3 +27,7 @@ The root instructions use principles that apply across the project, rather than 
 ## Submission
 
 Use `discussion-day-02.md` after the nominated rule and Review Standards status have been finalized. The Discussion is not posted on the user's behalf.
+
+## Documentation review decisions
+
+Qodo reviewed the initial draft in PR #2. Its two documentation findings were addressed: the root guide now explicitly states that generic visualizer discovery/selection/name binding is future work, and public submission links point to main so deleting the feature branch will not break them. No runtime feature was added to satisfy documentation wording.
