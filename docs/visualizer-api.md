@@ -36,7 +36,7 @@ export const myVisualizer = {
 | `accent` | Host-selected RGB array, three values in 0–1, for configurable palette colors. |
 | `dpr` | Render pixel ratio used by the host, capped at 2 and reduced to keep the canvas near a 1.2-million-pixel budget. |
 
-The host sizes the canvas backing buffer before each frame. Use `canvas.width` and `canvas.height` for the drawing viewport and aspect ratio. The host owns the audio element, audio graph, playback, FFT analysis, accent controls, and requestAnimationFrame loop. A visualizer receives no local file, filename, audio element, or raw audio samples through this API.
+The host sizes the canvas backing buffer before each frame. Use `canvas.width` and `canvas.height` for the drawing viewport and aspect ratio. The host owns the audio element, audio graph, playback, FFT analysis, accent controls, and frame scheduling. Normal motion renders continuously. Reduced motion supplies fixed time and zero energy, and renders only when needed, such as accent/size changes or graphics restoration. Do not assume render is called continuously. A visualizer receives no local file, filename, audio element, or raw audio samples through this API.
 
 The module owns only its rendering resources. Check shader compilation/program linking, release partial allocations if initialization fails, and implement `dispose()` so the host can clean up. On context restoration the host creates a fresh renderer; do not reuse old GPU resources. Do not start an independent animation loop, create audio nodes, fetch remote resources, inspect the DOM beyond the provided canvas, or mutate the shared player UI.
 

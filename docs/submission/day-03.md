@@ -44,7 +44,7 @@ Content/diff checks passed. No runtime change or new application tests. Qodo rev
 
 Ticket: https://github.com/vracton/particle-viz/issues/5
 Branch: `codex/issue-5-sol-shader`
-PR: pending creation
+PR: https://github.com/vracton/particle-viz/pull/8
 
 Requested the `gpt-6.1-sol` model for a fresh visualizer agent. It received only the project/API references, optional host entry point, and one assigned module path, `src/visualizers/sonic-bloom.js`. The brief asked for original luminous organic shader forms at opera-sonic's visual ambition, without reading that repository or other visualizers. The host agent handles registry integration and browser validation.
 
@@ -60,6 +60,13 @@ Acceptance checks:
 - Live playback supplied nonzero energy (observed 0.27). Emulated reduced motion held the same shader time across 12 frames and supplied energy 0. The emulation was removed afterward.
 - A local 48-frame RAF sample at 1280×720 averaged 16.68ms between callbacks. This is an observation in this browser, not GPU timing or a guarantee for other devices.
 - Host graphics recovery initially failed: deleting old handles after restoration left a GL error that the new shader's geometry-upload check caught. Moved disposal/drop to context loss, then forced loss/restoration again; the fallback cleared and the new shader rendered. This was caught by the acceptance check before Qodo review.
+- At a 2560×1440 viewport the rendering cap produced a 1461×822 buffer (1,200,942 pixels after rounding).
 - Inspected desktop and 390×844 mobile render, correct canvas dimensions, and no mobile horizontal overflow. Screenshots: `day-03-shader-desktop.jpg` and `day-03-shader-mobile.jpg`.
 - `npm test`: 3 passing. `npm run build`: passed after the recovery fix.
-- Qodo review: pending.
+- Qodo review: https://github.com/vracton/particle-viz/pull/8#issuecomment-6777788113. Confirmed redundant reduced-motion GPU draws and changed the host to event-driven redraws for this mode, keeping normal animation continuous. Qodo also flagged pending PR/review placeholders in this record; updated them after the review. The reviewer could not have seen the result of its own review before it ran, but the PR link should have been filled sooner. Follow-up fixes are checked locally, not claimed as re-reviewed.
+
+## Follow-up verification for PR #8
+
+Instrumented actual `drawArrays` calls in the browser after the Qodo performance fix. With reduced motion enabled, 12 observation frames produced zero additional GPU draws. Changing accent produced one draw; resizing produced one draw; restoring a lost context produced one draw and GL error 0. Disabling reduced motion resumed continuous rendering (10 draws during a 12-frame observation). Emulation and instrumentation were removed by resetting the media override and reloading.
+
+Clarified the lifecycle rule to avoid rendering unchanged static output and documented event-driven reduced-motion scheduling in the module API. This feedback reached the host's scheduler and was verified against draw counts, rather than just checking that the image looked frozen.

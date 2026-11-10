@@ -15,7 +15,7 @@ $('visualizer').replaceChildren(...visualizers.map(visualizer => {
 $('visualizer').value = selected.id;
 $('model').textContent = selected.authorModel;
 canvas.setAttribute('aria-label', `${selected.name} music visualizer`);
-let renderer, context, analyser, source, bins, objectURL, frame, failed = false;
+let renderer, context, analyser, source, bins, objectURL, frame, failed = false, stopped = false;
 let accent = colorRGB($('accent').value);
 let visualTime = 0, previousTime, trackGeneration = 0;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -97,9 +97,10 @@ $('seek').addEventListener('input', event => {
 $('accent').addEventListener('input', event => {
   accent = colorRGB(event.target.value);
   document.documentElement.style.setProperty('--accent', event.target.value);
+  scheduleRender();
 });
 function rendererError(message) {
-  failed = true; cancelAnimationFrame(frame);
+  failed = true; cancelAnimationFrame(frame); frame = undefined;
   $('graphics-status').textContent = message;
   $('graphics-status').hidden = false;
 }
@@ -118,11 +119,15 @@ canvas.addEventListener('webglcontextrestored', () => {
     failed = false; previousTime = undefined;
     $('graphics-status').hidden = true;
     $('graphics-status').textContent = '';
-    frame = requestAnimationFrame(render);
+    scheduleRender();
   } catch (error) { rendererError(error.message); }
 });
+function scheduleRender() {
+  if (!failed && !stopped && frame === undefined) frame = requestAnimationFrame(render);
+}
 function render(now) {
-  if (failed) return;
+  frame = undefined;
+  if (failed || stopped) return;
   // Keep fragment-shader workload bounded on high-DPI and large displays.
   const pixelBudgetRatio = Math.sqrt(1_200_000 / Math.max(1, canvas.clientWidth * canvas.clientHeight));
   const dpr = Math.min(devicePixelRatio || 1, 2, pixelBudgetRatio);
@@ -138,12 +143,17 @@ function render(now) {
     energy = bins.subarray(0, 12).reduce((a, b) => a+b, 0) / (12*255);
   }
   renderer.render({ time: visualTime, energy: reducedMotion.matches ? 0 : energy, accent, dpr });
-  frame = requestAnimationFrame(render);
+  if (!reducedMotion.matches) scheduleRender();
 }
-if (!failed) frame = requestAnimationFrame(render);
+window.addEventListener('resize', scheduleRender);
+reducedMotion.addEventListener('change', () => {
+  previousTime = undefined; scheduleRender();
+});
+scheduleRender();
 window.addEventListener('pagehide', event => {
   audio.pause();
   if (event.persisted) return;
-  cancelAnimationFrame(frame); renderer?.dispose();
+  stopped = true;
+  cancelAnimationFrame(frame); frame = undefined; renderer?.dispose();
   context?.close(); if (objectURL) URL.revokeObjectURL(objectURL);
 });
