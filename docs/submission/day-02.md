@@ -22,7 +22,7 @@ Pending workspace sign-in and verification. After the branch is pushed, check Re
 
 ## Rule scope
 
-The root instructions use principles that apply across the project, rather than prescribing individual Day 1 bug fixes. The Day 1 review remains an example of why lifecycle ownership matters; the nominated rule explains the product-wide host/visualizer boundary.
+The root instructions use principles that apply across the project, rather than prescribing individual Day 1 bug fixes. The host/visualizer rule includes an explicit least-access policy for visualizer-building agents, backed by a self-contained `docs/visualizer-api.md` reference. This is instruction-level scope, not a filesystem sandbox. The Day 1 review remains an example of why lifecycle ownership matters; the nominated rule explains the product-wide host/visualizer access boundary.
 
 ## Submission
 

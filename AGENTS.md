@@ -13,6 +13,7 @@ The current selector is hardcoded for Orbit Field; generic module discovery, sel
 - `index.html` — player markup and accessible controls.
 - `src/main.js` — host, audio lifecycle, shared state, and animation scheduling.
 - `src/visualizers/` — trusted visualizer modules and their rendering resources.
+- `docs/visualizer-api.md` — self-contained API reference for visualizer-building agents.
 - `src/audio-utils.js` and `src/audio-utils.test.js` — pure transport/color helpers and tests.
 - `src/style.css` — shared interface styling.
 - `docs/submission/` — challenge evidence, decisions, and submission drafts.
@@ -39,7 +40,11 @@ For runtime changes, run the tests and build. Also verify changed audio/graphics
 
 **Rule:** Keep playback, audio analysis, transport controls, shared settings, and animation scheduling in the host. Visualizers consume host-provided inputs and own their rendering implementation; they must not duplicate the player or create independent audio graphs and animation loops.
 
-**Why:** Listeners should be able to change the visuals without changing how they play their music. Agents should be able to add a visualizer without rebuilding the surrounding application.
+**Visualizer-agent access boundary:** A visualizer-building agent has a narrower role than a host/integration agent. Its task must name the visualizer files it is allowed to create or edit. It may read only this `AGENTS.md`, `docs/visualizer-api.md`, the relevant host entry point `src/main.js` when needed to understand the API, and the visualizer files assigned to that task or created by that agent within the assigned scope. Treat the contract and host entry point as read-only. Do not browse, search, or read other repository files, existing visualizers, Git history, dependencies, or secrets; do not modify host code, styling, configuration, or another visualizer. Do not use imports, shell commands, or tools to bypass that boundary. If the task needs more context or an API change, report the need to the host/integration agent or user and wait for an explicit scope expansion. Host integration, dependency installation, and repository-wide validation belong to the host/integration role.
+
+This is an agent instruction policy, not an enforced filesystem sandbox. When a runner is added, enforce equivalent read/write allowlists there rather than treating these instructions as a security guarantee.
+
+**Why:** Listeners should be able to change the visuals without changing how they play their music. Agents should be able to add a visualizer through a small API without copying other visualizers, exploring unrelated code, or rebuilding the surrounding application.
 
 ### 2. Shared behavior belongs in the contract
 
