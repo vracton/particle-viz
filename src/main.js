@@ -12,11 +12,13 @@ let renderer, context, analyser, source, bins, objectURL, frame, failed = false;
 let accent = colorRGB($('accent').value);
 let visualTime = 0, previousTime, trackGeneration = 0;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const status = text => { $('status').textContent = text; };
+const status = (text, isError = false) => {
+  $('status').textContent = text;
+  $('status').classList.toggle('sr-only', !isError);
+};
 function updateTransport() {
   $('play').textContent = audio.paused ? '▶' : 'Ⅱ';
   $('play').setAttribute('aria-label', audio.paused ? 'Play' : 'Pause');
-  $('mode').textContent = audio.paused ? 'IDLE FIELD' : 'AUDIO REACTIVE';
 }
 function updateProgress() {
   const valid = Number.isFinite(audio.duration) && audio.duration > 0;
@@ -34,21 +36,22 @@ $('file').addEventListener('change', event => {
   if (objectURL) URL.revokeObjectURL(objectURL);
   objectURL = URL.createObjectURL(file); audio.src = objectURL;
   $('track-name').textContent = file.name;
+  $('track-name').title = file.name;
   $('play').disabled = true;
-  status('Loading local audio…'); updateProgress(); updateTransport();
+  status('Loading…'); updateProgress(); updateTransport();
   event.target.value = '';
 });
 audio.addEventListener('loadedmetadata', () => {
-  $('play').disabled = false; updateProgress(); status('Ready. Your audio stays on this device.');
+  $('play').disabled = false; updateProgress(); status('Ready');
 });
 audio.addEventListener('error', () => {
   $('play').disabled = true; $('seek').disabled = true;
-  status('This file could not be played. Open another audio file.');
+  status('Cannot play this file. Try another audio file.', true);
 });
 $('play').addEventListener('click', async () => {
   if (!audio.paused) {
     audio.pause(); updateTransport();
-    status('Paused. Press Play to continue.');
+    status('Paused');
     return;
   }
   const generation = trackGeneration;
@@ -65,9 +68,9 @@ $('play').addEventListener('click', async () => {
     if (generation !== trackGeneration) return;
     await audio.play();
     if (generation !== trackGeneration) return;
-    status('Playing locally. Nothing is uploaded.');
+    status('Playing');
   } catch {
-    if (generation === trackGeneration) status('Playback could not start. Try Play again or open another file.');
+    if (generation === trackGeneration) status('Cannot start playback. Try again or open another file.', true);
   } finally {
     if (generation === trackGeneration) {
       $('play').disabled = Boolean(audio.error) || audio.readyState < HTMLMediaElement.HAVE_METADATA;
@@ -77,7 +80,7 @@ $('play').addEventListener('click', async () => {
 });
 for (const name of ['play', 'pause', 'ended']) audio.addEventListener(name, updateTransport);
 // Status follows explicit user intent; queued media events can belong to an old source.
-audio.addEventListener('ended', () => status('Track finished. Press Play to listen again.'));
+audio.addEventListener('ended', () => status('Track finished'));
 audio.addEventListener('timeupdate', updateProgress);
 audio.addEventListener('durationchange', updateProgress);
 $('seek').addEventListener('input', event => {
@@ -87,12 +90,11 @@ $('seek').addEventListener('input', event => {
 $('accent').addEventListener('input', event => {
   accent = colorRGB(event.target.value);
   document.documentElement.style.setProperty('--accent', event.target.value);
-  $('hex').textContent = event.target.value.toUpperCase();
 });
 function rendererError(message) {
   failed = true; cancelAnimationFrame(frame);
-  $('renderer').textContent = 'WEBGL UNAVAILABLE';
-  $('hint').textContent = message;
+  $('graphics-status').textContent = message;
+  $('graphics-status').hidden = false;
 }
 try { renderer = selected.create(canvas); }
 catch (error) { rendererError(error.message); }
@@ -104,8 +106,8 @@ canvas.addEventListener('webglcontextrestored', () => {
     renderer?.dispose();
     renderer = selected.create(canvas);
     failed = false; previousTime = undefined;
-    $('renderer').textContent = 'WEBGL / PARTICLE STUDY';
-    $('hint').textContent = 'Open a track to bring the field to life.';
+    $('graphics-status').hidden = true;
+    $('graphics-status').textContent = '';
     frame = requestAnimationFrame(render);
   } catch (error) { rendererError(error.message); }
 });

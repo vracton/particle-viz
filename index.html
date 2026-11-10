@@ -1,24 +1,47 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101114"><title>Particle Viz — local audio, live light</title></head>
-<body>
-<div id="app">
-<header><a class="wordmark" href="/">particle<span>viz</span><i></i></a><span class="edition">EXPERIMENT 001 / WEBGL</span></header>
-<main>
-<section class="stage" aria-label="Music visualization">
-<canvas id="canvas" aria-label="Orbit Field music visualizer"></canvas>
-<div class="stage-top"><span class="live"><i></i> <span id="mode">IDLE FIELD</span></span><span>01 — ORBIT FIELD</span></div>
-<div class="stage-caption"><p class="eyebrow">SOUND INTO SPACE</p><h1>Your music.<br>A different orbit.</h1><p id="hint">Open a track to bring the field to life.</p></div>
-<div class="stage-bottom"><span>LOCAL AUDIO · PRIVATE BY DESIGN</span><span id="renderer">WEBGL / PARTICLE STUDY</span></div>
-</section>
-<section class="console" aria-label="Player controls">
-<div class="track"><span class="track-icon" aria-hidden="true">↗</span><div><span class="eyebrow">NOW PLAYING</span><h2 id="track-name">Choose your soundtrack</h2><p id="status" role="status">MP3, WAV, OGG — whatever your browser plays.</p></div><label class="upload" for="file">Open audio <span aria-hidden="true">↗</span></label><input id="file" type="file" accept="audio/*" class="file-input"></div>
-<div class="transport"><button id="play" class="play" disabled aria-label="Play">▶</button><span id="elapsed" class="time">0:00</span><input id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek track" disabled><span id="duration" class="time">0:00</span></div>
-<div class="settings"><div><label class="eyebrow" for="visualizer">VISUALIZER</label><select id="visualizer"><option value="orbit-field">Orbit Field</option></select><span class="credit">Made with <span id="model"></span></span></div><div class="accent"><label class="eyebrow" for="accent">ACCENT</label><input id="accent" type="color" value="#c4f46d"><span id="hex">#C4F46D</span></div></div>
-</section>
-</main>
-<footer><span>A small space for sound.</span><span>PARTICLE VIZ <span class="muted">/ DAY 01</span></span></footer>
-</div>
-<audio id="audio" preload="metadata"></audio>
-<script type="module" src="/src/main.js"></script>
-</body></html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090b10">
+    <title>Particle Viz</title>
+  </head>
+  <body>
+    <main id="app">
+      <canvas id="canvas" aria-label="Orbit Field music visualizer"></canvas>
+      <header>
+        <a class="wordmark" href="/" aria-label="Particle Viz">particle<span>viz</span></a>
+        <div class="visualizer glass">
+          <label class="sr-only" for="visualizer">Visualizer</label>
+          <select id="visualizer"><option value="orbit-field">Orbit Field</option></select>
+          <span id="model" class="model"></span>
+        </div>
+      </header>
+      <p id="graphics-status" class="graphics-status glass" role="status" hidden></p>
+      <section class="player glass" aria-label="Player controls">
+        <div class="track-row">
+          <div class="track-info">
+            <h1 id="track-name">No track selected</h1>
+            <p id="status" class="sr-only" role="status">Choose an audio file.</p>
+          </div>
+          <label class="upload" title="Open audio">
+            <span>Open audio</span>
+            <input id="file" type="file" accept="audio/*" aria-label="Open audio">
+          </label>
+          <label class="color" title="Accent color">
+            <span class="sr-only">Accent color</span>
+            <input id="accent" type="color" value="#c4f46d">
+          </label>
+          <button id="play" class="play" disabled aria-label="Play">▶</button>
+        </div>
+        <div class="transport">
+          <span id="elapsed" class="time">0:00</span>
+          <input id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Seek track" disabled>
+          <span id="duration" class="time">0:00</span>
+        </div>
+      </section>
+    </main>
+    <audio id="audio" preload="metadata"></audio>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
