@@ -4,7 +4,7 @@ A WebGL music visualizer host where the player owns audio and shared controls, w
 
 ## Current capability
 
-Open a local audio file and play it through **Sonic Bloom**, an organic fragment-shader field created by GPT-6.1 Sol. Pause, seek, and change the shared accent color. The module's name and model credit are visible in the player. Files stay in the browser; there is no upload endpoint, account, or backend.
+Open a local audio file and play it through **Undertow**, a layered WebGL current that responds to different parts of the audio spectrum. Pause, seek, and change the shared accent color. The module's name and model credit are visible in the player. Files stay in the browser; there is no upload endpoint, account, or backend.
 
 ```sh
 npm ci
@@ -21,21 +21,21 @@ npm run preview
 
 ## Tiny visualizer contract
 
-`src/visualizers/sonic-bloom.js` exports a trusted, bundled module:
+`src/visualizers/undertow.js` exports a trusted, bundled module:
 
 ```js
 {
   id, name, description, authorModel,
   create(canvas) {
     return {
-      render({ time, energy, accent, dpr }) {},
+      render({ time, spectrum, fftSize, sampleRate, accent, dpr }) {},
       dispose() {}
     };
   }
 }
 ```
 
-`time` is seconds, `energy` is a normalized low-frequency average, `accent` is an RGB array in 0–1, and `dpr` is capped at 2 and scaled down when needed to keep rendering near 1.2 million pixels. The host sets the canvas backing size before rendering. Modules own and release their GPU resources; the host owns audio, FFT, and the animation loop. Model metadata is an author-supplied credit, not verified provenance.
+`time` is seconds, `spectrum` contains the unmodified FFT bins in dB, and `fftSize` and `sampleRate` locate each bin in Hz. `accent` is an RGB array in 0–1, and `dpr` is capped at 2 and scaled down when needed to keep rendering near 1.2 million pixels. See the [visualizer API](docs/visualizer-api.md) for buffer ownership and silence. The host sets the canvas backing size before rendering. Modules own and release their GPU resources; the host owns audio, FFT, and the animation loop. Model metadata is an author-supplied credit, not verified provenance.
 
 The app has a single registered visualizer. Adding more modules and switching between them is future work. Only reviewed repository code runs: this is not a sandbox for arbitrary generated JavaScript.
 

@@ -1,11 +1,11 @@
 import './style.css';
-import { sonicBloom } from './visualizers/sonic-bloom.js';
+import { undertow } from './visualizers/undertow.js';
 import { formatTime, seekTime, colorRGB } from './audio-utils.js';
 
 const $ = id => document.getElementById(id);
 const audio = $('audio'), canvas = $('canvas');
 // The host owns playback and scheduling; trusted modules only render.
-const visualizers = [sonicBloom];
+const visualizers = [undertow];
 const selected = visualizers[0];
 $('visualizer').replaceChildren(...visualizers.map(visualizer => {
   const option = document.createElement('option');
@@ -15,7 +15,7 @@ $('visualizer').replaceChildren(...visualizers.map(visualizer => {
 $('visualizer').value = selected.id;
 $('model').textContent = selected.authorModel;
 canvas.setAttribute('aria-label', `${selected.name} music visualizer`);
-let renderer, context, analyser, source, bins, objectURL, frame, failed = false, stopped = false;
+let renderer, context, analyser, source, spectrum, objectURL, frame, failed = false, stopped = false;
 let accent = colorRGB($('accent').value);
 let visualTime = 0, previousTime, trackGeneration = 0;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -66,10 +66,13 @@ $('play').addEventListener('click', async () => {
   try {
     if (!context) {
       context = new AudioContext();
-      analyser = context.createAnalyser(); analyser.fftSize = 256;
+      analyser = context.createAnalyser();
+      analyser.fftSize = 2048;
+      // Visualizers decide whether and how to smooth the unmodified FFT bins.
+      analyser.smoothingTimeConstant = 0;
       source = context.createMediaElementSource(audio);
       source.connect(analyser); analyser.connect(context.destination);
-      bins = new Uint8Array(analyser.frequencyBinCount);
+      spectrum = new Float32Array(analyser.frequencyBinCount);
     }
     await context.resume();
     if (generation !== trackGeneration) return;
@@ -136,14 +139,25 @@ function render(now) {
   if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
   const delta = previousTime === undefined ? 0 : Math.min((now-previousTime)/1000, 0.1);
   previousTime = now;
-  if (!reducedMotion.matches) visualTime += delta;
-  let energy = 0;
-  if (analyser && !audio.paused) {
-    analyser.getByteFrequencyData(bins);
-    energy = bins.subarray(0, 12).reduce((a, b) => a+b, 0) / (12*255);
+  const staticFrame = reducedMotion.matches;
+  if (!staticFrame) visualTime += delta;
+  if (spectrum) {
+    if (!staticFrame && context.state === 'running' && !audio.paused && !audio.ended &&
+        !audio.error && audio.hasAttribute('src') && audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      analyser.getFloatFrequencyData(spectrum);
+    } else {
+      spectrum.fill(-Infinity);
+    }
   }
-  renderer.render({ time: visualTime, energy: reducedMotion.matches ? 0 : energy, accent, dpr });
-  if (!reducedMotion.matches) scheduleRender();
+  renderer.render({
+    time: visualTime,
+    spectrum: spectrum ?? null,
+    fftSize: analyser?.fftSize ?? null,
+    sampleRate: context?.sampleRate ?? null,
+    accent,
+    dpr,
+  });
+  if (!staticFrame) scheduleRender();
 }
 window.addEventListener('resize', scheduleRender);
 reducedMotion.addEventListener('change', () => {
