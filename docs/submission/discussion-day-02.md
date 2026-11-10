@@ -1,21 +1,17 @@
-For Day 2, I added Particle Viz's root **AGENTS.md**:
+For Day 2, I added Particle Viz's [AGENTS.md](https://github.com/vracton/particle-viz/blob/main/AGENTS.md), covering the project structure, setup/check commands, and five broad project rules.
 
-https://github.com/vracton/particle-viz/blob/main/AGENTS.md
+The first draft felt too tied to individual bugs from Day 1. I wanted something that could guide the whole project as it grows, so we broadened it around architecture, shared contracts, lifecycle ownership, privacy, and focused changes with evidence. The specific bugs are useful examples, but I don't want the root instructions to become a growing list of yesterday's fixes.
 
-It describes the project, repository layout, working conventions, setup/check commands, and five broad rules: host/module separation, explicit shared contracts, lifecycle ownership, local-first privacy, and focused changes backed by evidence.
-
-My nominee is the visualizer-agent access boundary under **“One host, many visualizers,”** nicknamed **“The visualizer gets an API, not the whole repository.”**
+My most opinionated rule is the visualizer-agent access boundary under **“One host, many visualizers,”** which I'd call **“The visualizer gets an API, not the whole repository.”**
 
 > A visualizer-building agent has a narrower role than a host/integration agent. Its task must name the visualizer files it is allowed to create or edit.
 
-The rule allows that agent to read only AGENTS.md, the self-contained visualizer API reference, the relevant host entry point when necessary, and its assigned/new visualizer files. Other source files, existing visualizers, Git history, dependencies, and secrets are outside its scope. Host changes and repository-wide checks stay with the integration agent; extra access needs an explicit scope expansion.
+The idea behind Particle Viz is to have different agents create graphics that slot into the same music player. I want those agents working from a clear API and their own visualizer files, rather than exploring unrelated code, copying another visualizer, or rebuilding playback and controls. The host/API references are read-only, and anything outside the assigned scope needs explicit permission. For now that's an instruction boundary; a future runner will need to enforce the file-access limits.
 
-The reason is the product itself: I want to prompt different agents to make graphics that slot into the same player. They should build against the API instead of rummaging through unrelated code, copying another visualizer, or rebuilding playback and controls. This keeps each agent's job understandable and its output easy to integrate. AGENTS.md states the boundary as policy; a future runner will need read/write allowlists for hard enforcement.
+**I thought it was cool that Qodo was able to accurately distill the broader AGENTS.md guidance into a useful set of review rules.** It imported **11 active, repository-scoped standards**. For example, the broad “Own the whole lifecycle” rule became concrete checks for stale asynchronous work, resource cleanup, initialization failures, and recovery. Seeing that translation made the instructions feel more useful: they can guide a coding agent's approach and also give the reviewer specific things to look for.
 
-Day 1's Qodo review also showed why lifecycle ownership matters: queued audio events and restored GPU contexts need more than a working happy path. Those examples live in the delivery notes; the root instructions express the broader principles we can apply to future features.
+Qodo didn't turn every instruction into a review check—the visualizer-agent access boundary remains in AGENTS.md—but the extracted rules reflected the code-level concerns well. That was a useful distinction to see in practice.
 
-I imported AGENTS.md through Qodo Review Standards and verified **11 active, repository-scoped code-review rules** for `vracton/particle-viz`, with no pending rules. Qodo split the broad guidance into reviewable standards for host ownership, shared contracts/colors, resource lifecycles, local data, and reduced motion. The agent-access restriction remains a coding-agent instruction rather than a Qodo code-review check or enforced filesystem sandbox.
-
-PR: https://github.com/vracton/particle-viz/pull/2
+[Day 2 PR](https://github.com/vracton/particle-viz/pull/2)
 
 ![Qodo Review Standards — 11 active rules](https://raw.githubusercontent.com/vracton/particle-viz/main/docs/submission/day-02-qodo-standards.jpg)
