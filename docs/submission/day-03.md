@@ -38,7 +38,7 @@ Added a broad interface-writing rule to AGENTS.md: visible words must help opera
 
 Compared the rule against issue #3's removals and preserved controls/error states. Added narrow-width plus short-height/zoom-equivalent checks to the general verification workflow, carrying forward Qodo's confirmed overlap finding before this ticket.
 
-Content/diff checks passed. No runtime change or new application tests. Qodo reviewed commit `808bbb9` and reported zero bugs, rule violations, or requirement gaps: https://github.com/vracton/particle-viz/pull/7#issuecomment-6777612864. Checked the actual guidance against all ticket criteria before starting #5. Rule-source sync verification follows merge; a clean review does not establish sync.
+Content/diff checks passed. No runtime change or new application tests. Qodo reviewed commit `808bbb9` and reported zero bugs, rule violations, or requirement gaps: https://github.com/vracton/particle-viz/pull/7#issuecomment-6777612864. Checked the actual guidance against all ticket criteria before starting #5. After all three PRs merged into main, Qodo showed 13 active rules from AGENTS.md, up from 11. I verified the new constrained-viewport and static-rendering rules. The concise-copy guidance is on main; Qodo did not list it as a separate active rule.
 
 ## Issue #5: GPT-6.1 Sol shader
 

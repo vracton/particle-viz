@@ -16,6 +16,6 @@ For the shader ticket, GPT-6.1 Sol generated **Sonic Bloom**, an original organi
 
 The browser recovery check also caught a host bug before review: disposing old GPU handles after context restoration prevented the new renderer from starting. Moving disposal to context loss fixed it. Qodo reported no issues on the instructions-only PR; I still checked that it preserved labels, accessibility, errors, and model credit.
 
-The three PRs are reviewed and the confirmed findings are addressed. Merge and the updated Qodo rule-source sync are pending.
+All three PRs are merged. Qodo picked up two more review rules from AGENTS.md: keep controls reachable in constrained viewports and avoid redrawing unchanged output. The concise-copy guidance is in AGENTS.md for coding agents.
 
 ![Sonic Bloom in the glass player](https://raw.githubusercontent.com/vracton/particle-viz/4cfff246c7121d00d5acddbed8ded3d2edc1b70f/docs/submission/day-03-shader-desktop.jpg)
