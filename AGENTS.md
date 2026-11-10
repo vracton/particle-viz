@@ -1,61 +1,72 @@
-# Particle Viz agent instructions
+# Particle Viz
 
-## Project and scope
+## What we are building
 
-Particle Viz is a browser-only WebGL music visualizer host. The player provides local audio, transport, FFT analysis, and a shared accent color; small JavaScript modules provide visuals and metadata identifying their name and authoring model. The long-term goal is to let reviewed, agent-generated visualizers slot into that host.
+Particle Viz is a browser-based home for music visualizers. A shared player handles local music, playback, seeking, and accent colors. Small JavaScript visualizer modules provide graphics and metadata such as their name and authoring model. The longer-term goal is to prompt an agent for a new visualizer and slot the reviewed result into the same host.
 
-The current app is a Vite/vanilla JavaScript prototype with one bundled visualizer. Keep increments focused on the requested challenge. Multiple visualizers, generation workflows, scrobbling services, and a redesign are future work unless explicitly requested. Bundled modules are trusted code, not a sandbox for arbitrary JavaScript.
+Today this is a Vite/vanilla JavaScript app with one bundled WebGL visualizer. There is no backend or arbitrary-script sandbox. Multiple visualizers, generation workflows, scrobbling integrations, and design changes should be introduced as focused increments when requested, rather than built speculatively.
 
-## Setup and verification
+## Repository map
 
-Use Node.js 22.12+ (or 20.19+).
+- `index.html` — player markup and accessible controls.
+- `src/main.js` — host, audio lifecycle, shared state, and animation scheduling.
+- `src/visualizers/` — trusted visualizer modules and their rendering resources.
+- `src/audio-utils.js` and `src/audio-utils.test.js` — pure transport/color helpers and tests.
+- `src/style.css` — shared interface styling.
+- `docs/submission/` — challenge evidence, decisions, and submission drafts.
 
-- `npm ci` — install the locked dependencies.
-- `npm run dev` — start the local Vite app; open the printed URL.
+## Working in this repository
+
+Read the relevant code before changing it. Keep the existing vanilla JavaScript/Vite setup unless a requested capability justifies a change. Prefer small, readable modules and explicit interfaces; avoid new dependencies or abstractions that only serve a hypothetical future feature. Preserve keyboard access, meaningful control labels, responsive layout, and reduced-motion support when changing the interface.
+
+Use Node.js 22.12+ (or 20.19+):
+
+- `npm ci` — install locked dependencies.
+- `npm run dev` — start development; open the printed local URL.
 - `npm test` — run the Node utility tests.
-- `npm run build` — check the production build.
-- `npm run preview` — serve the production build locally.
+- `npm run build` — create the production build.
+- `npm run preview` — serve that production build locally.
 
-For runtime changes, run `npm test` and `npm run build`. For audio or graphics changes, also check the affected flow in a real WebGL/Web Audio browser with a local audio file. Relevant checks include play/pause/seek, replacing a playing track, invalid-file recovery, shared accent updates, and graphics loss/restoration. Run the checks relevant to the change, report what was actually verified, and state any verification limits. Documentation-only changes need a content/diff check, not a new browser test suite.
+For runtime changes, run the tests and build. Also verify changed audio/graphics interactions in a real WebGL/Web Audio browser with a local audio file. Choose checks based on the change; documentation-only work needs a content/diff check, not an application test suite. Report what was checked and any limits. Keep setup instructions and submission evidence consistent with actual behavior.
 
 ## Project rules
 
-### 1. Local tracks stay local
+### 1. One host, many visualizers
 
-**Applies to:** file input, audio loading, network calls, telemetry, and any visualizer receiving audio data.
+**Applies to:** player architecture, shared utilities, and every visualizer module.
 
-**Rule:** Keep selected audio files, their filenames, embedded metadata, and derived audio data on the device. Use browser-local media/object URLs. Do not send them to a server, analytics service, or model as part of the local playback flow.
+**Rule:** Keep playback, audio analysis, transport controls, shared settings, and animation scheduling in the host. Visualizers consume host-provided inputs and own their rendering implementation; they must not duplicate the player or create independent audio graphs and animation loops.
 
-**Why:** A listener should be able to visualize personal music without disclosing it. Any future external integration needs an explicitly requested data boundary, rather than quietly changing local playback.
+**Why:** Listeners should be able to change the visuals without changing how they play their music. Agents should be able to add a visualizer without rebuilding the surrounding application.
 
-### 2. The host plays; the visualizer draws
+### 2. Shared behavior belongs in the contract
 
-**Applies to:** `src/main.js`, shared player utilities, and `src/visualizers/`.
+**Applies to:** visualizer interfaces, metadata, configurable colors, and shared player UI.
 
-**Rule:** The host owns the audio element, AudioContext, FFT analysis, playback/seek controls, animation scheduling, canvas size, and shared accent state. A visualizer consumes the host's render inputs and owns its rendering resources. Do not create another audio graph, playback UI, independent animation loop, or competing global color picker inside a visualizer. Use the host-provided accent for its configurable palette.
+**Rule:** Express reusable behavior through an explicit host/module contract instead of module-specific global state or host special cases. Use shared accent settings for configurable palettes. Supply stable visualizer identifiers and accurate names/model credits, and show the selected module's name and credit in the player. Document intentional contract changes and update affected callers together.
 
-**Why:** A new visualizer should slot into the player without changing how the listener operates it or duplicating audio and scheduling work.
+**Why:** Independently authored visualizers need predictable inputs and attribution to remain interchangeable. Author-supplied model metadata is a credit, not verified provenance.
 
-### 3. Old tracks do not get a vote
+### 3. Own the whole lifecycle
 
-**Applies to:** asynchronous playback, file replacement, media events, and transport/status updates.
+**Applies to:** asynchronous work, event handlers, browser resources, and rendering modules.
 
-**Rule:** Tie asynchronous playback work to the current track generation and recheck ownership after awaits before updating state. Do not infer that a queued media event belongs to the current track merely because the audio element now has a src. File replacement must immediately synchronize the transport, and user-pause status must follow the current user's pause action rather than an old queued event.
+**Rule:** Make resource and state ownership explicit from creation through replacement, recovery, and cleanup. Stale asynchronous work must not update a newer operation's state. Release resources when their owner is replaced or disposed, handle initialization failures visibly, and recreate resources that become invalid after browser recovery.
 
-**Why:** Day 1's Qodo review found that an old pause event could overwrite a replacement track's loading status. Await guards alone do not cover queued browser events; `audio.load()` can also cancel pending events.
+**Why:** Audio, object URLs, event queues, animation frames, and GPU resources have different lifetimes. Ownership rules prevent a successful happy path from hiding leaks, races, or broken recovery.
 
-### 4. A restored context needs a new renderer
+### 4. Local by default, external by intent
 
-**Applies to:** WebGL initialization, context loss/restoration, animation teardown, and renderer disposal.
+**Applies to:** audio/file handling, network requests, telemetry, and future service integrations.
 
-**Rule:** Check shader compilation and program linking, clean up partially created resources on failure, and release GPU resources through `dispose()`. Stop rendering and show a readable state on context loss. On restoration, recreate the renderer's GPU resources before restarting the host's single animation loop; keep a readable fallback if recreation fails. Do not reuse GPU objects from the lost context.
+**Rule:** Keep selected music, filenames, embedded metadata, and derived audio data on-device in the local playback flow. Any requested external integration must make its destination, purpose, and data boundary explicit; do not silently add uploads, analytics, or model calls to local playback.
 
-**Why:** Day 1's Qodo review found that the original reload fallback left a recovered context blank. Browser recovery does not rebuild shader programs or buffers for us.
+**Why:** Playing personal music should not require disclosing it. A future scrobbling or generation feature should have a deliberate boundary rather than changing the privacy of the whole app.
 
-### 5. Credit the module honestly
+### 5. Deliver the requested increment with evidence
 
-**Applies to:** visualizer exports, registry entries, player metadata, and submission/demo descriptions.
+**Applies to:** implementation, dependencies, tests, documentation, and PR/submission descriptions.
 
-**Rule:** Give every visualizer a stable id, a name, a description, and an accurate authoring-model credit, and keep the selected module's name and model visible in the player. Credit adaptations or source visualizers when relevant. Do not invent a model/version, label author-supplied metadata as verified provenance, or describe an unfinished capability as working.
+**Rule:** Keep changes focused on the current task. Reuse existing patterns before adding frameworks or abstractions, verify the behavior being changed, and report results accurately. Do not claim unbuilt features, unrun checks, or an AI review as proof of correctness. Preserve unrelated work and record material decisions where the next contributor can find them.
 
-**Why:** Comparing agent-made visualizers is part of the product. Useful attribution depends on distinguishing an author's claim from evidence, and challenge submissions should match what was built and checked.
+**Why:** This project grows across multiple hackathon challenges. Small, reviewable increments and honest evidence let each challenge improve the factory without consuming the whole roadmap at once.

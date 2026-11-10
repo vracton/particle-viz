@@ -6,19 +6,23 @@ Repository instructions: https://github.com/vracton/particle-viz/blob/codex/day-
 
 ## Deliverable
 
-A root `AGENTS.md` describing Particle Viz, its current scope, setup/verification commands, and five rules. Each rule includes its scope and reason:
+A root `AGENTS.md` describing Particle Viz, its current scope, repository map, working conventions, setup/verification commands, and five broad project rules. Each rule includes its scope and reason:
 
-1. Local tracks stay local.
-2. The host plays; the visualizer draws.
-3. Old tracks do not get a vote.
-4. A restored context needs a new renderer.
-5. Credit the module honestly.
+1. One host, many visualizers.
+2. Shared behavior belongs in the contract.
+3. Own the whole lifecycle.
+4. Local by default, external by intent.
+5. Deliver the requested increment with evidence.
 
 No application feature or design changes. The profile-frame bonus is excluded.
 
 ## Qodo Review Standards
 
 Pending workspace sign-in and verification. After the branch is pushed, check Review Standards for this repository's rules. If missing, use Import rules and skills for `vracton/particle-viz`; check whether imported rules need activation. Do not describe the rules as imported or active until the workspace confirms it.
+
+## Rule scope
+
+The root instructions use principles that apply across the project, rather than prescribing individual Day 1 bug fixes. The Day 1 review remains an example of why lifecycle ownership matters; the nominated rule explains the product-wide host/visualizer boundary.
 
 ## Submission
 
