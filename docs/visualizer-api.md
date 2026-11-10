@@ -1,4 +1,4 @@
-# Visualizer API — current prototype
+# Visualizer API
 
 This file is the self-contained reference for an agent assigned to build a visualizer. Read the root `AGENTS.md` first and follow its visualizer-agent access boundary. Your task must explicitly name the visualizer files you may create/edit; it does not grant access to the rest of the repository.
 
@@ -15,7 +15,7 @@ export const myVisualizer = {
   create(canvas) {
     // Initialize this module's WebGL resources here.
     return {
-      render({ time, energy, accent, dpr }) {
+      render({ time, spectrum, fftSize, sampleRate, accent, dpr }) {
         // Draw one frame. The host calls this method.
       },
       dispose() {
@@ -32,13 +32,21 @@ export const myVisualizer = {
 | --- | --- |
 | `canvas` | The host-owned HTML canvas. The module may obtain its WebGL context. |
 | `time` | Animation time in seconds; the host freezes it for reduced motion. |
-| `energy` | Low-frequency audio energy normalized to 0–1; zero when paused or reduced motion is requested. |
+| `spectrum` | Borrowed `Float32Array` containing every analyser bin in dB, ordered from low to high frequency. `null` before analysis is initialized. |
+| `fftSize` | FFT window size in samples (currently 2048), or `null` before analysis is initialized. |
+| `sampleRate` | Actual audio context sample rate in Hz, or `null` before analysis is initialized. |
 | `accent` | Host-selected RGB array, three values in 0–1, for configurable palette colors. |
 | `dpr` | Render pixel ratio used by the host, capped at 2 and reduced to keep the canvas near a 1.2-million-pixel budget. |
 
-The host sizes the canvas backing buffer before each frame. Use `canvas.width` and `canvas.height` for the drawing viewport and aspect ratio. The host owns the audio element, audio graph, playback, FFT analysis, accent controls, and frame scheduling. Normal motion renders continuously. Reduced motion supplies fixed time and zero energy, and renders only when needed, such as accent/size changes or graphics restoration. Do not assume render is called continuously. A visualizer receives no local file, filename, audio element, or raw audio samples through this API.
+The host sizes the canvas backing buffer before each frame. Use `canvas.width` and `canvas.height` for the drawing viewport and aspect ratio. The host owns the audio element, audio graph, playback, FFT analysis, accent controls, and frame scheduling. Normal motion renders continuously. Reduced motion supplies fixed time and silent FFT bins, and renders only when needed, such as accent/size changes or graphics restoration. Do not assume render is called continuously. A visualizer receives no local file, filename, audio element, or raw audio samples through this API.
 
 The module owns only its rendering resources. Check shader compilation/program linking, release partial allocations if initialization fails, and implement `dispose()` so the host can clean up. On context restoration the host creates a fresh renderer; do not reuse old GPU resources. Do not start an independent animation loop, create audio nodes, fetch remote resources, inspect the DOM beyond the provided canvas, or mutate the shared player UI.
+
+## Reading the spectrum
+
+There are `fftSize / 2` bins. Bin `i` corresponds to `i * sampleRate / fftSize` Hz, with DC at bin zero. The host uses Web Audio's `getFloatFrequencyData()` directly and sets analyser smoothing to zero. It does not aggregate bins, normalize dB values, or perform temporal averaging. Visualizers choose their own frequency bands, scaling, and smoothing.
+
+Treat a null spectrum or non-finite magnitudes as silence. Once the analyser exists, the host fills all bins with `-Infinity` when playback is paused, ended, cleared, unavailable, or reduced motion is active. The same array is overwritten on subsequent render calls. Do not modify it or retain it after the call; copy it only if a visualizer needs its own history.
 
 ## Handoff to the host agent
 
