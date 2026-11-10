@@ -1,14 +1,21 @@
 import './style.css';
-import { orbitField } from './visualizers/orbit-field.js';
+import { sonicBloom } from './visualizers/sonic-bloom.js';
 import { formatTime, seekTime, colorRGB } from './audio-utils.js';
 
 const $ = id => document.getElementById(id);
 const audio = $('audio'), canvas = $('canvas');
-// Day 1 uses one trusted module. The host owns audio; modules only render.
-const visualizers = [orbitField];
+// The host owns playback and scheduling; trusted modules only render.
+const visualizers = [sonicBloom];
 const selected = visualizers[0];
+$('visualizer').replaceChildren(...visualizers.map(visualizer => {
+  const option = document.createElement('option');
+  option.value = visualizer.id; option.textContent = visualizer.name;
+  return option;
+}));
+$('visualizer').value = selected.id;
 $('model').textContent = selected.authorModel;
-let renderer, context, analyser, source, bins, objectURL, frame, failed = false;
+canvas.setAttribute('aria-label', `${selected.name} music visualizer`);
+let renderer, context, analyser, source, bins, objectURL, frame, failed = false, stopped = false;
 let accent = colorRGB($('accent').value);
 let visualTime = 0, previousTime, trackGeneration = 0;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -90,16 +97,20 @@ $('seek').addEventListener('input', event => {
 $('accent').addEventListener('input', event => {
   accent = colorRGB(event.target.value);
   document.documentElement.style.setProperty('--accent', event.target.value);
+  scheduleRender();
 });
 function rendererError(message) {
-  failed = true; cancelAnimationFrame(frame);
+  failed = true; cancelAnimationFrame(frame); frame = undefined;
   $('graphics-status').textContent = message;
   $('graphics-status').hidden = false;
 }
 try { renderer = selected.create(canvas); }
 catch (error) { rendererError(error.message); }
 canvas.addEventListener('webglcontextlost', event => {
-  event.preventDefault(); rendererError('Graphics context lost. Waiting for the browser to restore it…');
+  event.preventDefault();
+  // Drop old handles while the context is lost, not after a new one is restored.
+  renderer?.dispose(); renderer = undefined;
+  rendererError('Graphics context lost. Waiting for the browser to restore it…');
 });
 canvas.addEventListener('webglcontextrestored', () => {
   try {
@@ -108,12 +119,18 @@ canvas.addEventListener('webglcontextrestored', () => {
     failed = false; previousTime = undefined;
     $('graphics-status').hidden = true;
     $('graphics-status').textContent = '';
-    frame = requestAnimationFrame(render);
+    scheduleRender();
   } catch (error) { rendererError(error.message); }
 });
+function scheduleRender() {
+  if (!failed && !stopped && frame === undefined) frame = requestAnimationFrame(render);
+}
 function render(now) {
-  if (failed) return;
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  frame = undefined;
+  if (failed || stopped) return;
+  // Keep fragment-shader workload bounded on high-DPI and large displays.
+  const pixelBudgetRatio = Math.sqrt(1_200_000 / Math.max(1, canvas.clientWidth * canvas.clientHeight));
+  const dpr = Math.min(devicePixelRatio || 1, 2, pixelBudgetRatio);
   const width = Math.max(1, Math.round(canvas.clientWidth*dpr));
   const height = Math.max(1, Math.round(canvas.clientHeight*dpr));
   if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
@@ -126,12 +143,17 @@ function render(now) {
     energy = bins.subarray(0, 12).reduce((a, b) => a+b, 0) / (12*255);
   }
   renderer.render({ time: visualTime, energy: reducedMotion.matches ? 0 : energy, accent, dpr });
-  frame = requestAnimationFrame(render);
+  if (!reducedMotion.matches) scheduleRender();
 }
-if (!failed) frame = requestAnimationFrame(render);
+window.addEventListener('resize', scheduleRender);
+reducedMotion.addEventListener('change', () => {
+  previousTime = undefined; scheduleRender();
+});
+scheduleRender();
 window.addEventListener('pagehide', event => {
   audio.pause();
   if (event.persisted) return;
-  cancelAnimationFrame(frame); renderer?.dispose();
+  stopped = true;
+  cancelAnimationFrame(frame); frame = undefined; renderer?.dispose();
   context?.close(); if (objectURL) URL.revokeObjectURL(objectURL);
 });

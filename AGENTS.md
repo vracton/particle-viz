@@ -6,7 +6,7 @@ Particle Viz is a browser-based home for music visualizers. A shared player hand
 
 Today this is a Vite/vanilla JavaScript app with one bundled WebGL visualizer. There is no backend or arbitrary-script sandbox. Multiple visualizers, generation workflows, scrobbling integrations, and design changes should be introduced as focused increments when requested, rather than built speculatively.
 
-The current selector is hardcoded for Orbit Field; generic module discovery, selection, and name binding are not implemented yet. The rules below guide future changes as well as the existing prototype.
+The current registry contains one bundled visualizer, and the host binds its name and model credit from metadata. Multi-visualizer switching and automatic discovery are not implemented yet. The rules below guide future changes as well as the existing prototype.
 
 ## Repository map
 
@@ -58,7 +58,7 @@ This is an agent instruction policy, not an enforced filesystem sandbox. When a 
 
 **Applies to:** asynchronous work, event handlers, browser resources, and rendering modules.
 
-**Rule:** Make resource and state ownership explicit from creation through replacement, recovery, and cleanup. Stale asynchronous work must not update a newer operation's state. Release resources when their owner is replaced or disposed, handle initialization failures visibly, and recreate resources that become invalid after browser recovery.
+**Rule:** Make resource and state ownership explicit from creation through replacement, recovery, and cleanup. Stale asynchronous work must not update a newer operation's state. Release resources when their owner is replaced or disposed, handle initialization failures visibly, and recreate resources that become invalid after browser recovery. Avoid repeatedly rendering unchanged static output; redraw when a visible input changes and resume continuous work only when needed.
 
 **Why:** Audio, object URLs, event queues, animation frames, and GPU resources have different lifetimes. Ownership rules prevent a successful happy path from hiding leaks, races, or broken recovery.
 
